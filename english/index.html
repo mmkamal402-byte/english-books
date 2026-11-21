@@ -456,13 +456,13 @@ function lvDone(k){let n=0,t=0;lvSecs(k).forEach(c=>{D[c].s.forEach((_,i)=>{t++;
 const allPassed=()=>[0,1,2,3].every(k=>P.lv[k]);
 function renderTest(){$('st').textContent='🏆 المستويات والشهادات';$('se').textContent='اعرف مستواك، واختبر نفسك في كل مستوى، وخد شهادتك';
  const pl=P.place;
- let h=`<div class="q"><div class="qt">🎯 اختبار تحديد المستوى</div><p>20 سؤال من كل الكتاب، في حوالي 5 دقايق. هيقولّك تبدأ منين.</p>
+ let h=`<div class="q"><div class="qt">🎯 اختبار تحديد المستوى</div><p>20 سؤال من كل الكتاب، في حوالي 5 دقايق. هيقولّك تبدأ منين. <b>مالوش شهادة</b>، الشهادات من اختبارات المستويات تحت 👇</p>
  ${pl?`<div class="fb ok">آخر نتيجة: <b>${pl.s}%</b> — ننصحك تبدأ من <b>${MED[pl.lv]} ${LVN[pl.lv]}</b> (الأقسام ${5*pl.lv+1} – ${5*pl.lv+5})</div><div class="qb"><button data-golv="${pl.lv}">ابدأ من هنا ←</button><button class="sec2" data-tst="place">أعد الاختبار</button></div>`:`<button class="pb n1" data-tst="place">ابدأ اختبار تحديد المستوى</button>`}</div>`;
  h+=[0,1,2,3].map(k=>{const[n,t]=lvDone(k),r=P.lv[k],p=Math.round(n/t*100),S=lvSecs(k);
   return `<div class="q lvc${r?' ok':''}"><div class="lvh"><b>${MED[k]} ${LVN[k]}</b>${r?`<span class="pass">✓ ناجح ${r.s}%</span>`:''}</div>
   <p class="lhelp">${S.map(c=>`${c+1}. ${esc(D[c].a)}`).join(' · ')}</p>
   <div class="pg"><div class="pgb"><i style="width:${p}%"></i></div><span>حفظت ${n} من ${t}</span></div>
-  <div class="qb"><button data-tst="${k}">📝 اختبار المستوى</button>${r?`<button class="ok2" data-cert="${k}">🏅 الشهادة</button>`:`<button class="sec2" data-golv="${k}">ذاكر الأقسام</button>`}</div></div>`}).join('');
+  <div class="qb"><button data-tst="${k}">📝 اختبار المستوى${r?'':' ← الشهادة'}</button>${r?`<button class="ok2" data-cert="${k}">🏅 الشهادة</button>`:`<button class="sec2" data-golv="${k}">ذاكر الأقسام</button>`}</div></div>`}).join('');
  h+=`<div class="q"><div class="qt">👑 الشهادة الكبرى</div>${allPassed()?`<p>مبروك! نجحت في المستويات الأربعة 🎉</p><button class="pb n1" data-cert="all">🏅 طلّع الشهادة الكبرى</button>`:`<p class="lhelp">بتتفتح لما تنجح في اختبارات المستويات الأربعة (${[0,1,2,3].filter(k=>P.lv[k]).length} من 4).</p>`}</div>
  <div class="q" id="certbox" hidden><div class="qt" id="certt"></div><input class="srch" id="cname" placeholder="اكتب اسمك هنا" value="${esc(localStorage.getItem('jb-me')?(CL==='en'?ME.ne:ME.na):'')}">
  <div class="cl"><button data-cl="ar" class="${CL==='ar'?'on':''}">عربي</button><button data-cl="en" class="${CL==='en'?'on':''}">English</button></div>
@@ -476,7 +476,7 @@ function buildTest(kind){const secs=kind==='place'?D.map((_,c)=>c):lvSecs(+kind)
 function drawTest(){
  if(TS.k>=TS.q.length){const s=Math.round(TS.ok/TS.q.length*100);let h='';
   if(TS.kind==='place'){const lv=placeLv(s);P.place={s,lv,t:Date.now()};P.tests=(P.tests||[]).concat([{s,t:Date.now()}]).slice(-20);
-   h=`<div class="empty"><b style="font-size:30px">${s}%</b><br>ننصحك تبدأ من<br><b style="font-size:22px">${MED[lv]} ${LVN[lv]}</b><br><small>الأقسام ${5*lv+1} – ${5*lv+5}</small><br><button class="pb n1" data-golv="${lv}">ابدأ من هنا ←</button> <button class="pb n2" id="tback">رجوع</button></div>`}
+   h=`<div class="empty"><b style="font-size:30px">${s}%</b><br>ننصحك تبدأ من<br><b style="font-size:22px">${MED[lv]} ${LVN[lv]}</b><br><small>الأقسام ${5*lv+1} – ${5*lv+5}</small><br><button class="pb n1" data-golv="${lv}">ابدأ من هنا ←</button> <button class="pb n2" id="tback">رجوع</button><p class="lhelp" style="margin-top:14px">ده اختبار <b>تحديد مستوى</b> بس، ومالوش شهادة. 🏅 الشهادات بتاخدها لما تنجح في <b>اختبار كل مستوى</b>:</p><div class="qb" style="justify-content:center;flex-wrap:wrap">${[0,1,2,3].map(k=>`<button data-tst="${k}">${MED[k]} اختبار ${LVN[k]}</button>`).join('')}</div></div>`}
   else{const k=+TS.kind,ok=s>=PASS;if(ok&&(!P.lv[k]||P.lv[k].s<s))P.lv[k]={s,t:Date.now()};
    TS.wrong.forEach(n=>{P.hard[n]=1;P.srs[n]={b:1,d:dayNum()}});
    h=ok?`<div class="empty"><b style="font-size:30px">🎉 ${s}%</b><br>نجحت في <b>${MED[k]} ${LVN[k]}</b>!<br><button class="pb n1" data-cert="${k}">🏅 طلّع شهادتك</button> <button class="pb n2" id="tback">رجوع</button></div>`
