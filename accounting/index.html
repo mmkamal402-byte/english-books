@@ -127,6 +127,7 @@ main{max-width:860px;margin:0 auto;padding:16px max(4vw,12px)}
 details.scen summary{cursor:pointer;list-style:none;display:flex;flex-direction:column;gap:2px}details.scen summary::-webkit-details-marker{display:none}details.scen summary small{color:var(--mut);text-align:left}
 details.scen summary b{font-size:17px}details.scen summary::after{content:'▾ افتح';font-size:12px;color:var(--teal);font-weight:800}details.scen[open] summary::after{content:'▴ اقفل'}
 .tr{display:flex;justify-content:space-between;align-items:center;gap:8px;border-bottom:1px solid var(--line);padding:6px 0;flex-wrap:wrap}.tr small{color:var(--mut)}
+.me label{display:block;font-weight:800;margin-bottom:8px}.me .srch{margin-top:4px;width:100%;box-sizing:border-box}.me .two{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:-4px 0 8px}select.srch{background:var(--card);color:var(--ink)}
 .shd{background:var(--navy);color:#fff;border:0;border-radius:26px;padding:10px 16px;font-weight:800;min-height:46px}
 </style></head><body>
 <header class="top"><h1>اتعلم المحاسبة بالإنجليزي</h1><p class="by" style="font-size:18px">مع محمد كمال</p>
@@ -139,6 +140,7 @@ details.scen summary b{font-size:17px}details.scen summary::after{content:'▾ �
 <button class="tog" id="srchb">🔍 بحث</button>
 <button class="tog" id="scenb">📧 مواقف الشغل</button>
 <button class="tog" id="testb">🏆 الاختبار والشهادة</button>
+<button class="tog" id="meb">👤 بياناتي</button>
 </div>
 <div class="ctrl">
 <label>السرعة <input id="rate" type="range" min="0.6" max="1.2" step="0.1" value="1"> <span id="rv">1</span></label>
@@ -473,23 +475,81 @@ async function makeCert(name){try{await document.fonts.ready}catch(e){}
  g.fillStyle='#1f4e8c';g.font=F(800,34);g.fillText('إعداد وتصميم: محمد كمال',W/2,960);
  const url=c.toDataURL('image/png');$('cout').innerHTML=`<img src="${url}" alt="الشهادة" style="width:100%;border-radius:12px;margin-top:12px;border:1px solid var(--line)"><a class="pb n1" download="certificate.png" href="${url}" style="margin-top:10px;text-decoration:none">⬇️ حمّل الشهادة</a><p class="lhelp">على الآيفون: اضغط مطوّل على الصورة واختار «حفظ في الصور».</p>`}
 const XM={sub:[renderSub,subClick],tr:[renderTr,trClick],dl:[renderDl,dlClick],build:[renderBuild,buildClick],scen:[renderScen,scenClick],test:[renderTest,testClick]};
+/* ---- 👤 personal details ---- */
+const JOBS=[['accountant','محاسب','محاسبة'],['sales officer','مسؤول مبيعات','مسؤولة مبيعات'],['salesperson','بائع','بائعة'],['manager','مدير','مديرة'],['engineer','مهندس','مهندسة'],['teacher','معلم','معلمة'],['doctor','طبيب','طبيبة'],['nurse','ممرض','ممرضة'],['pharmacist','صيدلي','صيدلانية'],['secretary','سكرتير','سكرتيرة'],['cashier','كاشير','كاشير'],['designer','مصمم','مصممة'],['programmer','مبرمج','مبرمجة'],['technician','فني','فنية'],['electrician','كهربائي','كهربائية'],['driver','سائق','سائقة'],['chef','طباخ','طباخة'],['lawyer','محامي','محامية'],['student','طالب','طالبة'],['businessman','رجل أعمال','سيدة أعمال']];
+const CTRY=[['Egypt','مصر'],['Kuwait','الكويت'],['Saudi Arabia','السعودية'],['the UAE','الإمارات'],['Qatar','قطر'],['Bahrain','البحرين'],['Oman','عُمان'],['Jordan','الأردن'],['Palestine','فلسطين'],['Syria','سوريا'],['Lebanon','لبنان'],['Iraq','العراق'],['Yemen','اليمن'],['Sudan','السودان'],['Libya','ليبيا'],['Tunisia','تونس'],['Algeria','الجزائر'],['Morocco','المغرب'],['India','الهند'],['Pakistan','باكستان'],['the Philippines','الفلبين']];
+const ME0={ne:'Mohamed',na:'محمد',g:'m',job:0,age:40,from:0,live:1};
+let ME=Object.assign({},ME0);try{const v=JSON.parse(localStorage.getItem('jb-me')||'null');if(v)ME=Object.assign(ME,v)}catch(e){}
+const N1=['','one','two','three','four','five','six','seven','eight','nine','ten','eleven','twelve','thirteen','fourteen','fifteen','sixteen','seventeen','eighteen','nineteen'],N10=['','','twenty','thirty','forty','fifty','sixty','seventy','eighty','ninety'];
+const numW=n=>n<20?N1[n]:N10[Math.floor(n/10)]+(n%10?'-'+N1[n%10]:'');
+const arD=n=>String(n).replace(/\d/g,d=>'٠١٢٣٤٥٦٧٨٩'[d]);
+const D0=JSON.parse(JSON.stringify(D)),MX0=JSON.parse(JSON.stringify(MX)),EX0=JSON.parse(JSON.stringify(X.ex));let CHG=new Set();
+const rx=s=>s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+function meVals(){const j=ME.job===-1?[ME.je||'employee',ME.ja||'موظف',ME.ja||'موظفة']:JOBS[ME.job]||JOBS[0];let je=j[0];if(je==='businessman'&&ME.g==='f')je='businesswoman';
+ const fr=ME.from===-1?[ME.fe||'Egypt',ME.fa||'مصر']:CTRY[ME.from]||CTRY[0],lv=ME.live===-1?[ME.le||'Kuwait',ME.la||'الكويت']:CTRY[ME.live]||CTRY[1];
+ const age=Math.min(99,Math.max(10,+ME.age||40));
+ return{ne:(ME.ne||'Mohamed').trim(),na:(ME.na||ME.ne||'محمد').trim(),je,art:/^[aeiou]/i.test(je)?'an':'a',ja:ME.g==='f'?j[2]:j[1],fe:fr[0],fa:fr[1],le:lv[0],la:lv[1],aw:numW(age),aa:arD(age)}}
+const JF=/\b(am|I'm|was|be|you|not) an accountant\b/i,AF=/\bforty years old\b/i;
+const cap=(s,t)=>/^[A-Z]/.test(t)&&/^the /.test(s)?'The'+s.slice(3):s;
+function PZe(s,V){if(typeof s!=='string')return s;
+ s=s.replace(/\bMohamed( Kamal)?\b/g,V.ne).replace(/\bEgypt\b/g,V.fe).replace(/\bKuwait\b/g,V.le);
+ if(s==='an accountant')return V.art+' '+V.je;s=s.replace(JF,(m,a)=>`${a} ${V.art} ${V.je}`);
+ if(s==='forty')return V.aw;return s.replace(AF,V.aw+' years old')}
+function PZa(s,V,jf,af){if(typeof s!=='string')return s;
+ s=s.replace(/محمد( كمال)?/g,V.na).replace(/مصر/g,V.fa).replace(/الكويت(?!ي)/g,V.la);
+ if(jf||s==='محاسب')s=s.replace(/محاسباً|محاسب(?![ةيوا])/g,V.ja);
+ if(af||s==='أربعون')s=s.replace(/أربعون/g,V.aa);return s}
+function applyMe(){const V=meVals();CHG=new Set();
+ D0.forEach((c,ci)=>c.s.forEach((s,i)=>{const en=s[1].map(x=>x[0]).join(' '),jf=JF.test(en),af=AF.test(en);
+  const ch=s[1].map(x=>[PZe(x[0],V),PZa(x[1],V,jf,af)]);D[ci].s[i][1]=ch;if(ch.map(x=>x[0]).join(' ')!==en)CHG.add(gid(ci,i))}));
+ const pp=p=>{const jf=JF.test(p[0]),af=AF.test(p[0]);return [PZe(p[0],V),PZa(p[1],V,jf,af)].concat(p.slice(2))};
+ MX0.secs.forEach((c,ci)=>{const T=MX.secs[ci];T.sub=c.sub.map(x=>({base:x.base,opts:x.opts.map(pp)}));T.tr=c.tr.map(t=>t.map(pp));T.dl=c.dl.map(pp)});
+ MX0.scen.forEach((c,k)=>{MX.scen[k].l=c.l.map(pp)});
+ EX0.forEach((Q,ci)=>Q.forEach((q,n)=>{const en=D0[ci].s[q.i][1].map(x=>x[0]).join(' '),jf=JF.test(en),af=AF.test(en);const o=JSON.parse(JSON.stringify(q));
+  o.ar=PZa(q.ar,V,jf,af);['parts','ans','words','opts'].forEach(k=>{if(Array.isArray(q[k]))o[k]=q[k].map(x=>PZe(x,V))});X.ex[ci][n]=o}))}
+{const s0=say;say=async function(kind,key,rate,ci){const c=ci==null?cur:ci;if(kind==='s'&&CHG.has(gid(c,key))){await tts(enText(D[c].s[key]),rate);return}return s0(kind,key,rate,ci)}}
+applyMe();
+function renderMe(){$('st').textContent='👤 بياناتي';$('se').textContent='الجمل هتتغيّر علشان تتكلم عنك أنت';const V=meVals();
+ const opt=(L,sel,k)=>L.map((x,i)=>`<option value="${i}"${i===sel?' selected':''}>${esc(x[k])}</option>`).join('')+`<option value="-1"${sel===-1?' selected':''}>أخرى…</option>`;
+ $('list').innerHTML=`<div class="q me">
+ <label>اسمك بالإنجليزي<input class="srch" id="mne" dir="ltr" value="${esc(ME.ne)}" placeholder="Mohamed"></label>
+ <label>اسمك بالعربي<input class="srch" id="mna" value="${esc(ME.na)}" placeholder="محمد"></label>
+ <label>النوع<select class="srch" id="mg"><option value="m"${ME.g==='m'?' selected':''}>ذكر</option><option value="f"${ME.g==='f'?' selected':''}>أنثى</option></select></label>
+ <label>وظيفتك<select class="srch" id="mjob">${opt(JOBS,+ME.job,ME.g==='f'?2:1)}</select></label>
+ <div id="mjo"${ME.job===-1?'':' hidden'} class="two"><input class="srch" id="mje" dir="ltr" placeholder="Job in English" value="${esc(ME.je||'')}"><input class="srch" id="mja" placeholder="الوظيفة بالعربي" value="${esc(ME.ja||'')}"></div>
+ <label>عمرك<input class="srch" id="mage" type="number" min="10" max="99" inputmode="numeric" value="${esc(ME.age)}"></label>
+ <label>إنت منين؟<select class="srch" id="mfrom">${opt(CTRY,+ME.from,1)}</select></label>
+ <div id="mfo"${ME.from===-1?'':' hidden'} class="two"><input class="srch" id="mfe" dir="ltr" placeholder="Country in English" value="${esc(ME.fe||'')}"><input class="srch" id="mfa" placeholder="البلد بالعربي" value="${esc(ME.fa||'')}"></div>
+ <label>عايش فين؟<select class="srch" id="mlive">${opt(CTRY,+ME.live,1)}</select></label>
+ <div id="mlo"${ME.live===-1?'':' hidden'} class="two"><input class="srch" id="mle" dir="ltr" placeholder="Country in English" value="${esc(ME.le||'')}"><input class="srch" id="mla" placeholder="البلد بالعربي" value="${esc(ME.la||'')}"></div>
+ <div class="qb"><button id="msave">💾 احفظ</button><button class="sec2" id="mreset">رجّع الأصل</button></div></div>
+ <div class="q"><div class="qt">شكل جملك دلوقتي</div>${[3,8,11,6,5].map(i=>{const s=D[0].s[i];return s?`<div class="xr"><div class="xar">${esc(arText(s))}</div><div class="en xen">${esc(enText(s))}</div></div>`:''}).join('')}
+ <p class="lhelp">الجمل اللي فيها بياناتك بتتنطق بصوت الموبايل، لأن الصوت المسجّل متسجّل بالبيانات الأصلية. بياناتك محفوظة على الجهاز ده بس.</p></div>`;
+ [['mjob','mjo'],['mfrom','mfo'],['mlive','mlo']].forEach(([a,b])=>$(a).addEventListener('change',e=>$(b).hidden=e.target.value!=='-1'));
+ $('mg').addEventListener('change',e=>{const g=e.target.value,sel=$('mjob').value;$('mjob').innerHTML=opt(JOBS,+sel,g==='f'?2:1)})}
+function meClick(e){const t=e.target;
+ if(t.id==='msave'){const g=id=>$(id).value.trim();ME={ne:g('mne')||'Mohamed',na:g('mna')||g('mne')||'محمد',g:$('mg').value,job:+$('mjob').value,je:g('mje'),ja:g('mja'),age:+$('mage').value||40,from:+$('mfrom').value,fe:g('mfe'),fa:g('mfa'),live:+$('mlive').value,le:g('mle'),la:g('mla')};
+  try{localStorage.setItem('jb-me',JSON.stringify(ME))}catch(e){}applyMe();renderMe();const b=document.createElement('p');b.className='fb ok';b.textContent='✓ اتحفظت. كل الجمل اتغيّرت ببياناتك.';$('list').prepend(b);window.scrollTo({top:0});return}
+ if(t.id==='mreset'){ME=Object.assign({},ME0);try{localStorage.removeItem('jb-me')}catch(e){}applyMe();renderMe();return}
+ xClick(e)}
+XM.me=[renderMe,meClick];
 
 /* ---------- render & routing ---------- */
-const GLOBAL={dict:1,review:1,hard:1,search:1,scen:1,test:1};
+const GLOBAL={dict:1,review:1,hard:1,search:1,scen:1,test:1,me:1};
 function render(){
  stop();load(cur).catch(()=>{});const g=!!GLOBAL[mode];
  $('views').style.display=g?'none':'flex';$('all').parentElement.style.display=mode==='learn'?'':'none';$('prog').innerHTML='';
  document.querySelectorAll('#views button').forEach(b=>b.classList.toggle('on',b.dataset.v===mode));
  document.querySelectorAll('#secs button').forEach(b=>b.classList.toggle('on',mode==='dict'?b.dataset.d!=null:(!g&&+b.dataset.c===cur&&b.dataset.d==null)));
- ['revb','hardb','srchb','scenb','testb'].forEach(id=>$(id).classList.toggle('act',({revb:'review',hardb:'hard',srchb:'search',scenb:'scen',testb:'test'})[id]===mode));
- if(mode==='dict')return renderDict();if(mode==='review')return renderReview();if(mode==='hard')return renderHard();if(mode==='search')return renderSearch();if(mode==='scen')return renderScen();if(mode==='test')return renderTest();
+ ['revb','hardb','srchb','scenb','testb','meb'].forEach(id=>$(id).classList.toggle('act',({revb:'review',hardb:'hard',srchb:'search',scenb:'scen',testb:'test',meb:'me'})[id]===mode));
+ if(mode==='dict')return renderDict();if(mode==='review')return renderReview();if(mode==='hard')return renderHard();if(mode==='search')return renderSearch();if(mode==='scen')return renderScen();if(mode==='test')return renderTest();if(mode==='me')return renderMe();
  $('st').textContent=`${cur+1}. ${D[cur].a}`;$('se').textContent=D[cur].e+({sub:' — Substitution',tr:' — Forms',dl:' — Dialogue',build:' — Build'}[mode]||'')+(mode==='ex'?' — Review':mode==='listen'?' — Listening':'');
  XM[mode]?XM[mode][0]():mode==='ex'?renderEx():mode==='listen'?renderListen():renderLearn();
  try{localStorage.setItem(SK+'-sec',cur)}catch(e){}}
 $('secs').innerHTML='<button class="dict" data-d="1">📖 القاموس</button>'+D.map((c,i)=>`<button data-c="${i}">${i+1}. ${esc(c.a)}<em></em></button>`).join('');
 $('secs').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.d!=null)mode='dict';else{cur=+b.dataset.c;if(GLOBAL[mode])mode='learn'}render();b.scrollIntoView({inline:'center',block:'nearest'});window.scrollTo({top:0})});
 const go=m=>()=>{mode=m;render();window.scrollTo({top:0})};
-$('dictb').addEventListener('click',go('dict'));$('revb').addEventListener('click',go('review'));$('hardb').addEventListener('click',go('hard'));$('srchb').addEventListener('click',go('search'));$('scenb').addEventListener('click',go('scen'));$('testb').addEventListener('click',go('test'));$('shdb').addEventListener('click',shadow);
+$('dictb').addEventListener('click',go('dict'));$('revb').addEventListener('click',go('review'));$('hardb').addEventListener('click',go('hard'));$('srchb').addEventListener('click',go('search'));$('scenb').addEventListener('click',go('scen'));$('testb').addEventListener('click',go('test'));$('meb').addEventListener('click',go('me'));$('shdb').addEventListener('click',shadow);
 $('views').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;mode=b.dataset.v;render()});
 function refreshCard(card){const ci=+card.dataset.c,i=+card.dataset.i;const tmp=document.createElement('div');tmp.innerHTML=cardHtml(ci,i,!!card.querySelector('.sec-t'));card.replaceWith(tmp.firstElementChild);if(mode==='learn')$('prog').innerHTML=progHtml()}
 $('list').addEventListener('click',e=>{
@@ -517,7 +577,7 @@ function route(){const h=location.hash;let m,target=null;
  if(m=h.match(/^#s(\d+)$/)){const c=+m[1]-1;if(c>=0&&c<D.length){cur=c;mode='learn'}}
  else if(m=h.match(/^#ex(\d+)$/)){const c=+m[1]-1;if(c>=0&&c<D.length){cur=c;mode='ex'}}
  else if(m=h.match(/^#listen(\d+)$/)){const c=+m[1]-1;if(c>=0&&c<D.length){cur=c;mode='listen'}}
- else if(h==='#dict')mode='dict';else if(h==='#review')mode='review';else if(h==='#hard')mode='hard';else if(h==='#search')mode='search';else if(h==='#scen')mode='scen';else if(h==='#test')mode='test';
+ else if(h==='#dict')mode='dict';else if(h==='#review')mode='review';else if(h==='#hard')mode='hard';else if(h==='#search')mode='search';else if(h==='#scen')mode='scen';else if(h==='#test')mode='test';else if(h==='#me')mode='me';
  else if(m=h.match(/^#j(\d+)$/)){const n=+m[1]-1;if(n>=0&&n<TOTAL){mode='learn';[cur,target]=locate(n)}}
  render();stats();const b=document.querySelector(mode==='dict'?'#secs .dict':`#secs button[data-c="${cur}"]`);b&&b.scrollIntoView({inline:'center',block:'nearest'});
  if(target!=null){const el=document.querySelector(cardSel(cur,target));if(el){el.scrollIntoView({block:'center'});el.classList.add('play');setTimeout(()=>el.classList.remove('play'),2500)}}}
