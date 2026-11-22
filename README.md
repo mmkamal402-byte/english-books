@@ -2,7 +2,7 @@
 
 كتابين لتعلّم الإنجليزي كلمة بكلمة، بالصوت والتمارين والقاموس:
 
-- **الإنجليزية جملة بجملة**: 500 جملة يومية — https://mmkamal402-byte.github.io/english-books/english/
+- **الإنجليزية جملة بجملة**: 1000 جملة يومية في 8 مستويات — https://mmkamal402-byte.github.io/english-books/english/
 - **اتعلم المحاسبة بالإنجليزي**: 500 جملة محاسبية — https://mmkamal402-byte.github.io/english-books/accounting/
 
 إعداد وتصميم: محمد كمال
