@@ -286,23 +286,24 @@ function renderEx(){
    <div class="qb"><button data-chk="${n}">تحقق</button><button class="sec2" data-clr="${n}">مسح</button></div>`}
   else if(q.t==='tr'){b=`<div class="opts">${q.opts.map((o,k)=>`<button class="opt" data-q="${n}" data-o="${k}">${esc(o)}</button>`).join('')}</div>`}
   else{b=`<div class="blank">${q.words.map((w,k)=>k===q.k?'<u>____</u>':esc(w)).join(' ')}${q.q?'?':'.'}</div><div class="opts">${q.opts.map((o,k)=>`<button class="opt" data-q="${n}" data-o="${k}">${esc(o)}</button>`).join('')}</div>`}
-  return `<div class="q" id="q${n}"><div class="qt">${n+1}. ${TL[q.t]}</div><div class="qa">${esc(q.ar)}</div>${b}<div class="fb" id="fb${n}"></div></div>`}).join('');}
-function finish(n,ok){const q=X.ex[cur][n];if(ES.done[n])return;ES.done[n]=1;if(ok)ES.ok++;
+  return `<div class="q" id="q${n}"><div class="qt">${n+1}. ${TL[q.t]}</div><div class="qa">${esc(q.ar)}</div>${b}<div class="fb" id="fb${n}"></div></div>`}).join('');
+ const SV=(P.ex||{})[cur]||{};Object.keys(SV).forEach(k0=>{const n=+k0,v=SV[k0],q=Q[n];if(!q)return;if(q.t==='order'){(v.a||[]).forEach(k=>{const w=$('pl'+n).querySelector(`[data-k="${k}"]`);if(w){const c=w.cloneNode(true);c.dataset.from=k;w.classList.add('used');$('az'+n).appendChild(c)}})}else{$('q'+n).querySelectorAll('.opt').forEach((b,j)=>{if(j===q.ans)b.classList.add('right');else if(j===v.a)b.classList.add('wrong')})}finish(n,!!v.ok,v.a,true)});}
+function finish(n,ok,a,silent){const q=X.ex[cur][n];if(ES.done[n])return;ES.done[n]=1;if(ok)ES.ok++;if(!silent){P.ex=P.ex||{};(P.ex[cur]=P.ex[cur]||{})[n]={ok:ok?1:0,a}}
  $('q'+n).classList.add(ok?'ok':'no');const right=enText(D[cur].s[q.i]);
  $('fb'+n).className='fb '+(ok?'ok':'no');$('fb'+n).innerHTML=(ok?'✓ إجابة صحيحة! ':'✗ الإجابة الصحيحة: ')+`<span>${esc(right)}</span>`;
- if(!ok){P.hard[gid(cur,q.i)]=1;P.srs[gid(cur,q.i)]={b:1,d:dayNum()}}
+ if(silent){$('sc').textContent=`النتيجة: ${ES.ok} / 10`+(Object.keys(ES.done).length===10?(ES.ok>=8?' — ممتاز!':' — راجع القسم وجرّب تاني'):'');return}if(!ok){P.hard[gid(cur,q.i)]=1;P.srs[gid(cur,q.i)]={b:1,d:dayNum()}}
  $('sc').textContent=`النتيجة: ${ES.ok} / 10`+(Object.keys(ES.done).length===10?(ES.ok>=8?' — ممتاز!':' — راجع القسم وجرّب تاني'):'');
  touch();stop();stopFlag=false;say('s',q.i,null,cur)}
 function exClick(e){
- const t=e.target;if(t.id==='redo'){renderEx();return}
+ const t=e.target;if(t.id==='redo'){if(P.ex)delete P.ex[cur];touch();renderEx();return}
  const w=t.closest('.w');if(w){const n=+w.dataset.q;if(ES.done[n])return;const az=$('az'+n),pl=$('pl'+n);
   if(w.parentElement===pl){const c=w.cloneNode(true);c.dataset.from=w.dataset.k;w.classList.add('used');az.appendChild(c)}
   else{pl.querySelector(`[data-k="${w.dataset.from}"]`).classList.remove('used');w.remove()}return}
  const chk=t.closest('[data-chk]');if(chk){const n=+chk.dataset.chk,q=X.ex[cur][n];const got=[...$('az'+n).children].map(c=>q.parts[+c.dataset.from]);
-  if(got.length<q.parts.length)return;finish(n,got.join('|')===q.ans.join('|'));return}
+  if(got.length<q.parts.length)return;finish(n,got.join('|')===q.ans.join('|'),[...$('az'+n).children].map(c=>+c.dataset.from));return}
  const clr=t.closest('[data-clr]');if(clr){const n=+clr.dataset.clr;if(ES.done[n])return;$('az'+n).innerHTML='';$('pl'+n).querySelectorAll('.w').forEach(x=>x.classList.remove('used'));return}
  const o=t.closest('.opt');if(o){const n=+o.dataset.q,q=X.ex[cur][n];if(ES.done[n])return;const k=+o.dataset.o;
-  $('q'+n).querySelectorAll('.opt').forEach((b,j)=>{if(j===q.ans)b.classList.add('right');else if(j===k)b.classList.add('wrong')});finish(n,k===q.ans)}}
+  $('q'+n).querySelectorAll('.opt').forEach((b,j)=>{if(j===q.ans)b.classList.add('right');else if(j===k)b.classList.add('wrong')});finish(n,k===q.ans,k)}}
 /* ---------- listening ---------- */
 let LS={};
 const shuf=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
