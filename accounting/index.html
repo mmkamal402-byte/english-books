@@ -132,6 +132,9 @@ details.scen summary b{font-size:17px}details.scen summary::after{content:'▾ �
 .me label{display:block;font-weight:800;margin-bottom:8px}.me .srch{margin-top:4px;width:100%;box-sizing:border-box}.me .two{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:-4px 0 8px}select.srch{background:var(--card);color:var(--ink)}
 .shd{background:var(--navy);color:#fff;border:0;border-radius:26px;padding:10px 16px;font-weight:800;min-height:46px}
 
+.tbar{height:6px;background:var(--line);border-radius:4px;overflow:hidden;margin:-4px 0 10px}.tbar i{display:block;height:100%;width:100%;background:#1b8a6b;transition:width .25s linear}
+.byl{margin:12px 0;text-align:right;font-size:14px}.byl>div{display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center;margin:4px 0}.byl .pgb{height:8px;background:var(--line);border-radius:4px;overflow:hidden}.byl .pgb i{display:block;height:100%}
+
 .lvc .lvh{display:flex;justify-content:space-between;align-items:center;font-size:18px}.lvc.ok{border-color:#1b8a6b}.pass{background:#1b8a6b;color:#fff;border-radius:12px;padding:2px 10px;font-size:13px;font-weight:800}.qb .ok2{background:#c99a35;color:#fff}
 .nudge{background:color-mix(in srgb,#ffc857 25%,var(--card));border:1.5px solid #ffc857;border-radius:16px;padding:12px 14px;margin-bottom:12px;line-height:1.6}
 .lvd{flex:none;align-self:center;font-size:20px;padding:0 2px}
@@ -308,17 +311,18 @@ function exClick(e){
 let LS={};
 const shuf=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
 function renderListen(){const S=D[cur].s,idx=shuf(S.map((_,i)=>i)).slice(0,10);
- LS={q:idx.map(i=>{const others=shuf(S.map((_,j)=>j).filter(j=>j!==i)).slice(0,2);const opts=shuf([i,...others]);return{i,opts,ans:opts.indexOf(i)}}),done:{},ok:0};
+ LS={q:idx.map(i=>{const others=shuf(S.map((_,j)=>j).filter(j=>j!==i)).slice(0,2);const opts=shuf([i,...others]);return{i,opts,ans:opts.indexOf(i)}}),done:{},ok:0};P.lis=P.lis||{};if(P.lis[cur])LS.q=P.lis[cur].q;else P.lis[cur]={q:LS.q,a:{}};
  $('list').innerHTML=`<div class="score"><span id="lsc">النتيجة: 0 / 10</span><button id="lredo">أسئلة جديدة</button></div><p class="lhelp">اسمع الجملة من غير ما تشوفها، واختار معناها بالعربي.</p>`+LS.q.map((q,n)=>`<div class="q" id="lq${n}"><div class="qt">${n+1}. اسمع واختار المعنى</div>
   <div class="qb"><button data-lp="${n}">▶ اسمع</button><button class="sec2" data-ls="${n}">🐢 ببطء</button></div>
-  <div class="opts" dir="rtl">${q.opts.map((o,k)=>`<button class="opt ar-o" data-lq="${n}" data-o="${k}">${esc(arText(S[o]))}</button>`).join('')}</div><div class="fb" id="lfb${n}"></div></div>`).join('')}
-function listenClick(e){const t=e.target;if(t.id==='lredo'){renderListen();return}
+  <div class="opts" dir="rtl">${q.opts.map((o,k)=>`<button class="opt ar-o" data-lq="${n}" data-o="${k}">${esc(arText(S[o]))}</button>`).join('')}</div><div class="fb" id="lfb${n}"></div></div>`).join('');const LA=P.lis[cur].a;Object.keys(LA).forEach(n=>ansL(+n,LA[n],true))}
+function listenClick(e){const t=e.target;if(t.id==='lredo'){if(P.lis)delete P.lis[cur];touch();renderListen();return}
  const p=t.closest('[data-lp],[data-ls]');if(p){const n=+(p.dataset.lp??p.dataset.ls);stop();stopFlag=false;say('s',LS.q[n].i,p.dataset.ls!=null?0.7:null,cur);return}
- const o=t.closest('[data-lq]');if(o){const n=+o.dataset.lq,q=LS.q[n];if(LS.done[n])return;LS.done[n]=1;const k=+o.dataset.o,ok=k===q.ans;if(ok)LS.ok++;
+ const o=t.closest('[data-lq]');if(o)ansL(+o.dataset.lq,+o.dataset.o)}
+function ansL(n,k,silent){const q=LS.q[n];if(LS.done[n])return;LS.done[n]=1;const ok=k===q.ans;if(ok)LS.ok++;if(!silent)P.lis[cur].a[n]=k;
   $('lq'+n).querySelectorAll('.opt').forEach((b,j)=>{if(j===q.ans)b.classList.add('right');else if(j===k)b.classList.add('wrong')});
   $('lq'+n).classList.add(ok?'ok':'no');$('lfb'+n).className='fb '+(ok?'ok':'no');$('lfb'+n).innerHTML=(ok?'✓ صح! ':'✗ الجملة كانت: ')+`<span>${esc(enText(D[cur].s[q.i]))}</span>`;
-  if(!ok){P.hard[gid(cur,q.i)]=1;P.srs[gid(cur,q.i)]={b:1,d:dayNum()}}
-  $('lsc').textContent=`النتيجة: ${LS.ok} / 10`+(Object.keys(LS.done).length===10?(LS.ok>=8?' — ودنك ممتازة!':' — اسمع القسم تاني وجرّب'):'');touch()}}
+  if(!ok&&!silent){P.hard[gid(cur,q.i)]=1;P.srs[gid(cur,q.i)]={b:1,d:dayNum()}}
+  $('lsc').textContent=`النتيجة: ${LS.ok} / 10`+(Object.keys(LS.done).length===10?(LS.ok>=8?' — ودنك ممتازة!':' — اسمع القسم تاني وجرّب'):'');if(!silent)touch()}
 /* ---------- daily review (spaced repetition) ---------- */
 const IV=[1,2,4,8,16,32];let RV={};
 function renderReview(){$('st').textContent='🔁 مراجعة اليوم';$('se').textContent='الجمل اللي حفظتها بترجعلك في الوقت المناسب علشان ما تنساهاش';
@@ -426,14 +430,18 @@ function dlClick(e){const t=e.target;
 let BS={};
 function bPool(){const s=MX.secs[cur],P0=[];s.sub.forEach(x=>x.opts.forEach(o=>P0.push(o)));s.tr.forEach(t=>t.forEach(f=>P0.push(f)));s.dl.forEach(l=>P0.push(l));
  return P0.filter(p=>{const n=p[0].split(' ').length;return n>=4&&n<=9})}
-function renderBuild(){const Q=shuf(bPool()).slice(0,8);BS={q:Q.map(p=>{const words=p[0].replace(/[.?!]$/,'').split(' ');return{en:p[0],ar:p[1],words,mix:shuf(words.map((w,k)=>k))}}),done:{},ok:0};
- $('list').innerHTML=`<div class="score"><span id="bsc">النتيجة: 0 / ${BS.q.length}</span><button id="bredo">جمل جديدة</button></div><p class="lhelp">ركّب جملة جديدة بنفسك من الكلمات، وبعدين اسمعها.</p>`+BS.q.map((q,n)=>`<div class="q" id="bq${n}"><div class="qt">${n+1}. ركّب الجملة</div><div class="qa">${esc(q.ar)}</div><div class="ansz" id="baz${n}"></div><div class="pool" id="bpl${n}">${q.mix.map(k=>`<button class="w" data-bq="${n}" data-bk="${k}">${esc(low(q.words[k],k===0))}</button>`).join('')}</div><div class="qb"><button data-bchk="${n}">تحقق</button><button class="sec2" data-bclr="${n}">مسح</button></div><div class="fb" id="bfb${n}"></div></div>`).join('')}
-function buildClick(e){const t=e.target;if(t.id==='bredo'){renderBuild();return}
+function renderBuild(fresh){P.bld=P.bld||{};let sv=fresh?null:P.bld[cur];
+ if(!sv){const Q=shuf(bPool()).slice(0,8);sv=P.bld[cur]={q:Q.map(p=>{const words=p[0].replace(/[.?!]$/,'').split(' ');return{en:p[0],ar:p[1],words,mix:shuf(words.map((w,k)=>k))}}),a:{}}}
+ BS={q:sv.q,done:{},ok:0};
+ $('list').innerHTML=`<div class="score"><span id="bsc">النتيجة: 0 / ${BS.q.length}</span><button id="bredo">جمل جديدة</button></div><p class="lhelp">ركّب جملة جديدة بنفسك من الكلمات، وبعدين اسمعها.</p>`+BS.q.map((q,n)=>`<div class="q" id="bq${n}"><div class="qt">${n+1}. ركّب الجملة</div><div class="qa">${esc(q.ar)}</div><div class="ansz" id="baz${n}"></div><div class="pool" id="bpl${n}">${q.mix.map(k=>`<button class="w" data-bq="${n}" data-bk="${k}">${esc(low(q.words[k],k===0))}</button>`).join('')}</div><div class="qb"><button data-bchk="${n}">تحقق</button><button class="sec2" data-bclr="${n}">مسح</button></div><div class="fb" id="bfb${n}"></div></div>`).join('');
+ Object.keys(sv.a).forEach(k0=>{const n=+k0;sv.a[k0].forEach(k=>{const w=$('bpl'+n).querySelector(`[data-bk="${k}"]`);if(w){const c=w.cloneNode(true);c.dataset.from=k;w.classList.add('used');$('baz'+n).appendChild(c)}});bCheck(n,true)})}
+function bCheck(n,silent){const q=BS.q[n];if(BS.done[n])return;const order=[...$('baz'+n).children].map(x=>+x.dataset.from),got=order.map(k=>q.words[k]);if(got.length<q.words.length)return;
+ const ok=got.join(' ').toLowerCase()===q.words.join(' ').toLowerCase();BS.done[n]=1;if(ok)BS.ok++;$('bq'+n).classList.add(ok?'ok':'no');$('bfb'+n).className='fb '+(ok?'ok':'no');$('bfb'+n).innerHTML=(ok?'✓ صح! ':'✗ الصح: ')+`<span>${esc(q.en)}</span>`;
+ $('bsc').textContent=`النتيجة: ${BS.ok} / ${BS.q.length}`;if(silent)return;P.bld[cur].a[n]=order;touch();stop();stopFlag=false;sayX(q.en)}
+function buildClick(e){const t=e.target;if(t.id==='bredo'){renderBuild(true);touch();return}
  const w=t.closest('.w');if(w){const n=+w.dataset.bq;if(BS.done[n])return;const az=$('baz'+n),pl=$('bpl'+n);
   if(w.parentElement===pl){const c=w.cloneNode(true);c.dataset.from=w.dataset.bk;w.classList.add('used');az.appendChild(c)}else{pl.querySelector(`[data-bk="${w.dataset.from}"]`).classList.remove('used');w.remove()}return}
- const c=t.closest('[data-bchk]');if(c){const n=+c.dataset.bchk,q=BS.q[n];if(BS.done[n])return;const got=[...$('baz'+n).children].map(x=>q.words[+x.dataset.from]);if(got.length<q.words.length)return;
-  const ok=got.join(' ').toLowerCase()===q.words.join(' ').toLowerCase();BS.done[n]=1;if(ok)BS.ok++;$('bq'+n).classList.add(ok?'ok':'no');$('bfb'+n).className='fb '+(ok?'ok':'no');$('bfb'+n).innerHTML=(ok?'✓ صح! ':'✗ الصح: ')+`<span>${esc(q.en)}</span>`;
-  $('bsc').textContent=`النتيجة: ${BS.ok} / ${BS.q.length}`;touch();stop();stopFlag=false;sayX(q.en);return}
+ const c=t.closest('[data-bchk]');if(c){bCheck(+c.dataset.bchk);return}
  const cl=t.closest('[data-bclr]');if(cl){const n=+cl.dataset.bclr;if(BS.done[n])return;$('baz'+n).innerHTML='';$('bpl'+n).querySelectorAll('.w').forEach(x=>x.classList.remove('used'))}}
 /* ---- 📧 work situations ---- */
 function renderScen(){$('st').textContent='📧 مواقف شغل حقيقية';$('se').textContent=`${MX.scen.length} مواقف: إيميلات ومكالمات واجتماعات`;
@@ -457,7 +465,7 @@ function lvDone(k){let n=0,t=0;lvSecs(k).forEach(c=>{D[c].s.forEach((_,i)=>{t++;
 const allPassed=()=>[0,1,2,3].every(k=>P.lv[k]);
 function renderTest(){$('st').textContent='🏆 المستويات والشهادات';$('se').textContent='اعرف مستواك، واختبر نفسك في كل مستوى، وخد شهادتك';
  const pl=P.place;
- let h=`<div class="q"><div class="qt">🎯 اختبار تحديد المستوى</div><p>20 سؤال من كل الكتاب، في حوالي 5 دقايق. هيقولّك تبدأ منين. <b>مالوش شهادة</b>، الشهادات من اختبارات المستويات تحت 👇</p>
+ let h=`<div class="q"><div class="qt">🎯 اختبار تحديد المستوى</div><p>32 سؤال صعب من المستويات الأربعة، بوقت لكل سؤال: ترجمة دقيقة، واستماع، وكتابة جملة، وكلمة ناقصة. حوالي 15 دقيقة. هيقولّك مستواك الحقيقي في كل مستوى. <b>مالوش شهادة</b>، الشهادات من اختبارات المستويات تحت 👇</p>
  ${pl?`<div class="fb ok">آخر نتيجة: <b>${pl.s}%</b> — ننصحك تبدأ من <b>${MED[pl.lv]} ${LVN[pl.lv]}</b> (الأقسام ${5*pl.lv+1} – ${5*pl.lv+5})</div><div class="qb"><button data-golv="${pl.lv}">ابدأ من هنا ←</button><button class="sec2" data-tst="place">أعد الاختبار</button></div>`:`<button class="pb n1" data-tst="place">ابدأ اختبار تحديد المستوى</button>`}</div>`;
  h+=[0,1,2,3].map(k=>{const[n,t]=lvDone(k),r=P.lv[k],p=Math.round(n/t*100),S=lvSecs(k);
   return `<div class="q lvc${r?' ok':''}"><div class="lvh"><b>${MED[k]} ${LVN[k]}</b>${r?`<span class="pass">✓ ناجح ${r.s}%</span>`:''}</div>
@@ -469,15 +477,34 @@ function renderTest(){$('st').textContent='🏆 المستويات والشها�
  <div class="cl"><button data-cl="ar" class="${CL==='ar'?'on':''}">عربي</button><button data-cl="en" class="${CL==='en'?'on':''}">English</button></div>
  <button class="pb n1" id="cmake">🏅 اعمل الشهادة</button><div id="cout"></div></div>`;
  $('list').innerHTML=h}
-function buildTest(kind){const secs=kind==='place'?D.map((_,c)=>c):lvSecs(+kind);const pool=[];
- secs.forEach(ci=>X.ex[ci].forEach(q=>{if(q.t==='tr'||q.t==='fill')pool.push({k:'x',ci,q})}));
- const pick=shuf(pool).slice(0,14);
- const lis=shuf(secs.flatMap(ci=>D[ci].s.map((_,i)=>[ci,i]))).slice(0,6).map(([ci,i])=>{const S=D[ci].s;const others=shuf(S.map((_,j)=>j).filter(j=>j!==i)).slice(0,3);const opts=shuf([i,...others]);return{k:'l',ci,i,opts,ans:opts.indexOf(i)}});
- return shuf(pick.concat(lis))}
-function drawTest(){
+const QT={tf:30,lp:30,ob:50,fl:25};
+function simSents(ci,i,n){const S=D[ci].s,w=new Set(enText(S[i]).toLowerCase().match(/[a-z']+/g)||[]);
+ return S.map((s,j)=>[j,j===i?-1:(enText(s).toLowerCase().match(/[a-z']+/g)||[]).filter(x=>w.has(x)).length+Math.random()*.5]).filter(x=>x[1]>=0).sort((a,b)=>b[1]-a[1]).slice(0,n).map(x=>x[0])}
+function qFor(ci,type){const S=D[ci].s;
+ if(type==='tf'){const T=MX.secs[ci].tr[Math.floor(Math.random()*MX.secs[ci].tr.length)],j=Math.floor(Math.random()*5),others=shuf([0,1,2,3,4].filter(x=>x!==j)).slice(0,3),opts=shuf([j,...others]);return{k:'tf',ci,ar:T[j][1],opts:opts.map(x=>T[x][0]),ans:opts.indexOf(j)}}
+ if(type==='lp'){const i=Math.floor(Math.random()*S.length),opts=shuf([i,...simSents(ci,i,3)]);return{k:'lp',ci,i,opts,ans:opts.indexOf(i),plays:0}}
+ if(type==='ob'){const C=S.map((s,i)=>i).filter(i=>{const n=enText(S[i]).split(' ').length;return n>=5&&n<=10});const i=C.length?C[Math.floor(Math.random()*C.length)]:0;const words=enText(S[i]).replace(/[.?!]$/,'').split(' ');
+  const pool=[...new Set(S.flatMap(s=>enText(s).replace(/[.?!]$/,'').split(' ')))].filter(x=>!words.some(w=>w.toLowerCase()===x.toLowerCase()));const ext=shuf(pool).slice(0,3);
+  const all=words.concat(ext);return{k:'ob',ci,i,words,all,mix:shuf(all.map((_,k)=>k)),need:words.length}}
+ const F=X.ex[ci].filter(q=>q.t==='fill');if(!F.length)return qFor(ci,'tf');const q=F[Math.floor(Math.random()*F.length)];return{k:'fl',ci,i:q.i,q}}
+function buildTest(kind){const lvls=kind==='place'?[0,1,2,3]:[+kind],per=kind==='place'?2:5,out=[];
+ lvls.forEach(lv=>['tf','lp','ob','fl'].forEach(tp=>{for(let r=0;r<per;r++){const S=lvSecs(lv);out.push(Object.assign(qFor(S[Math.floor(Math.random()*S.length)],tp),{lv}))}}));
+ return kind==='place'?out:shuf(out)}
+let TT=null;
+function tick(){clearInterval(TT);const x=TS.q[TS.k],lim=QT[x.k];TS.left=lim;const bar=$('tbar');
+ TT=setInterval(()=>{if(!bar.isConnected){clearInterval(TT);return}TS.left-=.25;bar.style.width=Math.max(0,TS.left/lim*100)+'%';bar.style.background=TS.left<8?'#d1495b':'';$('tsec').textContent=Math.ceil(Math.max(0,TS.left));if(TS.left<=0){clearInterval(TT);answer(-1)}},250)}
+function answer(j,got){if(TS.lock)return;TS.lock=true;clearInterval(TT);const x=TS.q[TS.k];let ok;
+ if(x.k==='ob'){ok=j!==-1&&got.join(' ').toLowerCase()===x.words.join(' ').toLowerCase();$('tfb').className='fb '+(ok?'ok':'no');$('tfb').innerHTML=(ok?'✓ صح! ':'✗ الصح: ')+`<span>${esc(x.words.join(' '))}</span>`}
+ else{const ans=x.k==='fl'?x.q.ans:x.ans;ok=j===ans;$('tq').querySelectorAll('.opt').forEach((b,k)=>{if(k===ans)b.classList.add('right');else if(k===j)b.classList.add('wrong')});if(j===-1){$('tfb').className='fb no';$('tfb').textContent='⏰ الوقت خلص'}}
+ TS.by[x.lv]=TS.by[x.lv]||[0,0];TS.by[x.lv][1]++;if(ok){TS.ok++;TS.by[x.lv][0]++}else if(x.i!=null)TS.wrong.push(gid(x.ci,x.i));
+ setTimeout(()=>{TS.k++;TS.lock=false;drawTest()},ok?800:1900)}
+function drawTest(){clearInterval(TT);
  if(TS.k>=TS.q.length){const s=Math.round(TS.ok/TS.q.length*100);let h='';
-  if(TS.kind==='place'){const lv=placeLv(s);P.place={s,lv,t:Date.now()};P.tests=(P.tests||[]).concat([{s,t:Date.now()}]).slice(-20);
-   h=`<div class="empty"><b style="font-size:30px">${s}%</b><br>ننصحك تبدأ من<br><b style="font-size:22px">${MED[lv]} ${LVN[lv]}</b><br><small>الأقسام ${5*lv+1} – ${5*lv+5}</small><br><button class="pb n1" data-golv="${lv}">ابدأ من هنا ←</button> <button class="pb n2" id="tback">رجوع</button><p class="lhelp" style="margin-top:14px">ده اختبار <b>تحديد مستوى</b> بس، ومالوش شهادة. 🏅 الشهادات بتاخدها لما تنجح في <b>اختبار كل مستوى</b>:</p><div class="qb" style="justify-content:center;flex-wrap:wrap">${[0,1,2,3].map(k=>`<button data-tst="${k}">${MED[k]} اختبار ${LVN[k]}</button>`).join('')}</div></div>`}
+  if(TS.kind==='place'){const pc=[0,1,2,3].map(k=>TS.by[k]?Math.round(TS.by[k][0]/TS.by[k][1]*100):0);let lv=pc.findIndex(p=>p<PASS);const all=lv===-1;if(all)lv=3;
+   P.place={s,lv,t:Date.now(),by:pc};P.tests=(P.tests||[]).concat([{s,t:Date.now()}]).slice(-20);
+   h=`<div class="empty"><b style="font-size:30px">${s}%</b><br>${all?'مستواك عالي جدًا 👏 جرّب اختبارات المستويات علطول':'ننصحك تبدأ من'}<br><b style="font-size:22px">${MED[lv]} ${LVN[lv]}</b><br><small>الأقسام ${5*lv+1} – ${5*lv+5}</small>
+   <div class="byl">${pc.map((p,k)=>`<div><span>${MED[k]} ${LVN[k]}</span><div class="pgb"><i style="width:${p}%;background:${p>=PASS?'#1b8a6b':'#d1495b'}"></i></div><b>${p}%</b></div>`).join('')}</div>
+   <button class="pb n1" data-golv="${lv}">ابدأ من هنا ←</button> <button class="pb n2" id="tback">رجوع</button><p class="lhelp" style="margin-top:14px">ده اختبار <b>تحديد مستوى</b> بس، ومالوش شهادة. 🏅 الشهادات بتاخدها لما تنجح في <b>اختبار كل مستوى</b>:</p><div class="qb" style="justify-content:center;flex-wrap:wrap">${[0,1,2,3].map(k=>`<button data-tst="${k}">${MED[k]} اختبار ${LVN[k]}</button>`).join('')}</div></div>`}
   else{const k=+TS.kind,ok=s>=PASS;if(ok&&(!P.lv[k]||P.lv[k].s<s))P.lv[k]={s,t:Date.now()};
    TS.wrong.forEach(n=>{P.hard[n]=1;P.srs[n]={b:1,d:dayNum()}});
    h=ok?`<div class="empty"><b style="font-size:30px">🎉 ${s}%</b><br>نجحت في <b>${MED[k]} ${LVN[k]}</b>!<br><button class="pb n1" data-cert="${k}">🏅 طلّع شهادتك</button> <button class="pb n2" id="tback">رجوع</button></div>`
@@ -485,22 +512,27 @@ function drawTest(){
      [...new Set(TS.wrong)].map(n=>{const[ci,i]=locate(n);return cardHtml(ci,i,true)}).join('')}
   touch();$('list').innerHTML=h;window.scrollTo({top:0});return}
  const x=TS.q[TS.k];let h='';
- if(x.k==='l'){h=`<div class="qt">🎧 اسمع واختار المعنى</div><div class="qb"><button id="tplay">▶ اسمع</button></div><div class="opts" dir="rtl">${x.opts.map((o,j)=>`<button class="opt ar-o" data-to="${j}">${esc(arText(D[x.ci].s[o]))}</button>`).join('')}</div>`}
- else{const q=x.q;h=`<div class="qt">${q.t==='tr'?'اختار الترجمة الصح':'اختار الكلمة الصح'}</div><div class="qa">${esc(q.ar)}</div>${q.t==='fill'?`<div class="blank">${q.words.map((w,k)=>k===q.k?'<u>____</u>':esc(w)).join(' ')}${q.q?'?':'.'}</div>`:''}<div class="opts">${q.opts.map((o,j)=>`<button class="opt" data-to="${j}">${esc(o)}</button>`).join('')}</div>`}
+ if(x.k==='lp'){h=`<div class="qt">🎧 اسمع الجملة واختار اللي اتقالت بالظبط</div><div class="qb"><button id="tplay">▶ اسمع (<span id="tpl">2</span>)</button></div><div class="opts">${x.opts.map((o,j)=>`<button class="opt" data-to="${j}">${esc(enText(D[x.ci].s[o]))}</button>`).join('')}</div>`}
+ else if(x.k==='tf'){h=`<div class="qt">✍️ اختار الترجمة الصح بالظبط (انتبه للنفي والسؤال والزمن)</div><div class="qa">${esc(x.ar)}</div><div class="opts">${x.opts.map((o,j)=>`<button class="opt" data-to="${j}">${esc(o)}</button>`).join('')}</div>`}
+ else if(x.k==='ob'){h=`<div class="qt">🧩 اكتب الجملة بالإنجليزي من الكلمات (فيه ${x.all.length-x.need} كلمات زيادة)</div><div class="qa">${esc(arText(D[x.ci].s[x.i]))}</div><div class="ansz" id="taz"></div><div class="pool" id="tpool">${x.mix.map(k=>`<button class="w" data-tw="${k}">${esc(low(x.all[k],k===0))}</button>`).join('')}</div><div class="qb"><button id="tchk">تحقق</button><button class="sec2" id="tclr">مسح</button></div>`}
+ else{const q=x.q;h=`<div class="qt">اختار الكلمة الصح</div><div class="qa">${esc(q.ar)}</div><div class="blank">${q.words.map((w,k)=>k===q.k?'<u>____</u>':esc(w)).join(' ')}${q.q?'?':'.'}</div><div class="opts">${q.opts.map((o,j)=>`<button class="opt" data-to="${j}">${esc(o)}</button>`).join('')}</div>`}
  const title=TS.kind==='place'?'🎯 تحديد المستوى':`${MED[+TS.kind]} اختبار ${LVN[+TS.kind]}`;
- $('list').innerHTML=`<div class="score"><span>${title} — ${TS.k+1} / ${TS.q.length}</span><span>صح: ${TS.ok}</span></div><div class="q" id="tq">${h}<div class="fb" id="tfb"></div></div>`;
- if(x.k==='l'){stop();stopFlag=false;say('s',x.i,null,x.ci)}}
+ $('list').innerHTML=`<div class="score"><span>${title} — ${TS.k+1} / ${TS.q.length}</span><span>⏱ <b id="tsec"></b></span></div><div class="tbar"><i id="tbar"></i></div><div class="q" id="tq">${h}<div class="fb" id="tfb"></div></div>`;
+ tick();if(x.k==='lp')playLP()}
+function playLP(){const x=TS.q[TS.k];if(x.plays>=2)return;x.plays++;$('tpl').textContent=2-x.plays;if(x.plays>=2)$('tplay').disabled=true;stop();stopFlag=false;say('s',x.i,null,x.ci)}
+function startTest(kind){TS={kind,q:buildTest(kind),k:0,ok:0,lock:false,wrong:[],by:{}};drawTest();window.scrollTo({top:0})}
 function openCert(kind){renderTest();const b=$('certbox');b.hidden=false;b.dataset.k=kind;$('certt').textContent=(kind==='all'?'👑 الشهادة الكبرى':`🏅 شهادة ${LVN[+kind]}`)+` (التصميم ${CDS[kind==='all'?'all':'lv'+kind][0]})`;$('cout').innerHTML='';b.scrollIntoView({block:'start',behavior:'smooth'})}
 function testClick(e){const t=e.target;
- const st=t.closest('[data-tst]');if(st){TS={kind:st.dataset.tst,q:buildTest(st.dataset.tst),k:0,ok:0,lock:false,wrong:[]};drawTest();window.scrollTo({top:0});return}
- const gl=t.closest('[data-golv]');if(gl){cur=5*+gl.dataset.golv;mode='learn';render();stats();const b=document.querySelector(`#secs button[data-c="${cur}"]`);b&&b.scrollIntoView({inline:'center',block:'nearest'});window.scrollTo({top:0});return}
+ const st=t.closest('[data-tst]');if(st){startTest(st.dataset.tst);return}
+ const gl=t.closest('[data-golv]');if(gl){clearInterval(TT);cur=5*+gl.dataset.golv;mode='learn';render();stats();const b=document.querySelector(`#secs button[data-c="${cur}"]`);b&&b.scrollIntoView({inline:'center',block:'nearest'});window.scrollTo({top:0});return}
  const ce=t.closest('[data-cert]');if(ce){openCert(ce.dataset.cert);return}
- if(t.id==='tback'){renderTest();return}
- if(t.id==='tplay'){const x=TS.q[TS.k];stop();stopFlag=false;say('s',x.i,null,x.ci);return}
- const o=t.closest('[data-to]');if(o&&!TS.lock){const x=TS.q[TS.k],j=+o.dataset.to,ans=x.k==='l'?x.ans:x.q.ans,ok=j===ans;TS.lock=true;if(ok)TS.ok++;else TS.wrong.push(gid(x.ci,x.k==='l'?x.i:x.q.i));
-  $('tq').querySelectorAll('.opt').forEach((b,k)=>{if(k===ans)b.classList.add('right');else if(k===j)b.classList.add('wrong')});
-  setTimeout(()=>{TS.k++;TS.lock=false;drawTest()},ok?700:1600);return}
-
+ if(t.id==='tback'){clearInterval(TT);renderTest();return}
+ if(t.closest('#tplay')){playLP();return}
+ const w=t.closest('[data-tw]');if(w&&!TS.lock){if(w.parentElement.id==='tpool'){if(w.classList.contains('used'))return;const c=w.cloneNode(true);c.dataset.from=w.dataset.tw;delete c.dataset.tw;c.dataset.tw2=1;w.classList.add('used');$('taz').appendChild(c)}return}
+ const w2=t.closest('[data-tw2]');if(w2&&!TS.lock){$('tpool').querySelector(`[data-tw="${w2.dataset.from}"]`).classList.remove('used');w2.remove();return}
+ if(t.id==='tclr'&&!TS.lock){$('taz').innerHTML='';$('tpool').querySelectorAll('.w').forEach(x=>x.classList.remove('used'));return}
+ if(t.id==='tchk'){const x=TS.q[TS.k],got=[...$('taz').children].map(c=>x.all[+c.dataset.from]);if(!got.length)return;answer(0,got);return}
+ const o=t.closest('[data-to]');if(o){answer(+o.dataset.to);return}
  const clb=t.closest('[data-cl]');if(clb){CL=clb.dataset.cl;try{localStorage.setItem('jb-cl',CL)}catch(e){}document.querySelectorAll('[data-cl]').forEach(b=>b.classList.toggle('on',b===clb));const ci=$('cname');if(localStorage.getItem('jb-me')&&(!ci.value.trim()||ci.value.trim()===ME.na||ci.value.trim()===ME.ne))ci.value=CL==='en'?ME.ne:ME.na;if($('cout').innerHTML&&ci.value.trim())makeCert(ci.value.trim());return}
  if(t.id==='cmake'){const nm=$('cname').value.trim();if(!nm){$('cname').focus();return}makeCert(nm)}
  if(t.closest('.card'))cardClick(e)}
@@ -527,7 +559,7 @@ async function makeCert(name){const kind=$('certbox').dataset.k||'all',EN=CL==='
  g.fillStyle=ct;g.font=F(700,28);g.fillText(new Date(dt).toLocaleDateString(EN?'en-GB':'ar-EG',{year:'numeric',month:'long',day:'numeric'}),340,918);
  const url=c.toDataURL('image/jpeg',0.92);$('cout').innerHTML=`<img src="${url}" alt="الشهادة" style="width:100%;border-radius:12px;margin-top:12px;border:1px solid var(--line)"><a class="pb n1" download="certificate.jpg" href="${url}" style="margin-top:10px;text-decoration:none">⬇️ حمّل الشهادة</a><p class="lhelp">على الآيفون: اضغط مطوّل على الصورة واختار «حفظ في الصور».</p>`}
 /* first-visit nudge */
-function placeNudge(){if(P.place||Object.keys(P.done).length||localStorage.getItem(SK+'-nudge'))return '';return `<div class="nudge"><b>🎯 أول مرة هنا؟</b> اعرف مستواك في 5 دقايق وابدأ من المكان المناسب.<div class="qb"><button data-nudge="go">ابدأ الاختبار</button><button class="sec2" data-nudge="no">لاحقًا</button></div></div>`}
+function placeNudge(){if(P.place||Object.keys(P.done).length||localStorage.getItem(SK+'-nudge'))return '';return `<div class="nudge"><b>🎯 أول مرة هنا؟</b> اعرف مستواك الحقيقي وابدأ من المكان المناسب.<div class="qb"><button data-nudge="go">ابدأ الاختبار</button><button class="sec2" data-nudge="no">لاحقًا</button></div></div>`}
 const XM={sub:[renderSub,subClick],tr:[renderTr,trClick],dl:[renderDl,dlClick],build:[renderBuild,buildClick],scen:[renderScen,scenClick],test:[renderTest,testClick]};
 /* ---- 👤 personal details ---- */
 const JOBS=[['accountant','محاسب','محاسبة'],['sales officer','مسؤول مبيعات','مسؤولة مبيعات'],['salesperson','بائع','بائعة'],['manager','مدير','مديرة'],['engineer','مهندس','مهندسة'],['teacher','معلم','معلمة'],['doctor','طبيب','طبيبة'],['nurse','ممرض','ممرضة'],['pharmacist','صيدلي','صيدلانية'],['secretary','سكرتير','سكرتيرة'],['cashier','كاشير','كاشير'],['designer','مصمم','مصممة'],['programmer','مبرمج','مبرمجة'],['technician','فني','فنية'],['electrician','كهربائي','كهربائية'],['driver','سائق','سائقة'],['chef','طباخ','طباخة'],['lawyer','محامي','محامية'],['student','طالب','طالبة'],['businessman','رجل أعمال','سيدة أعمال']];
@@ -621,7 +653,7 @@ function cardClick(e){const card=e.target.closest('.card');if(!card)return;const
   else if(act==='done'){toggleDone(gid(ci,i));refreshCard(card)}else if(act==='hard'){toggleHard(gid(ci,i));if(mode==='hard')renderHard();else refreshCard(card)}return}
  const w=e.target.closest('.chip');if(w){stop();stopFlag=false;say('w',w.dataset.w,null,ci);return}
  const en=e.target.closest('.en');if(en&&document.body.classList.contains('hide'))card.classList.add('shown')}
-$('all').addEventListener('click',playAll);$('setb').addEventListener('click',e=>{const o=$('sets').hidden;$('sets').hidden=!o;e.currentTarget.setAttribute('aria-expanded',o)});$('prog').addEventListener('click',e=>{const n=e.target.closest('[data-nudge]');if(!n)return;try{localStorage.setItem(SK+'-nudge',1)}catch(x){}if(n.dataset.nudge==='go'){mode='test';render();TS={kind:'place',q:buildTest('place'),k:0,ok:0,lock:false,wrong:[]};drawTest();window.scrollTo({top:0})}else $('prog').innerHTML=progHtml()});$('stop').addEventListener('click',()=>{RP=null;stop()});
+$('all').addEventListener('click',playAll);$('setb').addEventListener('click',e=>{const o=$('sets').hidden;$('sets').hidden=!o;e.currentTarget.setAttribute('aria-expanded',o)});$('prog').addEventListener('click',e=>{const n=e.target.closest('[data-nudge]');if(!n)return;try{localStorage.setItem(SK+'-nudge',1)}catch(x){}if(n.dataset.nudge==='go'){mode='test';render();startTest('place')}else $('prog').innerHTML=progHtml()});$('stop').addEventListener('click',()=>{RP=null;stop()});
 $('rate').addEventListener('input',e=>$('rv').textContent=e.target.value);
 $('hide').addEventListener('click',e=>{const on=e.currentTarget.getAttribute('aria-pressed')!=='true';e.currentTarget.setAttribute('aria-pressed',on);document.body.classList.toggle('hide',on);document.querySelectorAll('.card.shown').forEach(c=>c.classList.remove('shown'))});
 $('rep').addEventListener('click',e=>{const b=e.currentTarget;b.setAttribute('aria-pressed',b.getAttribute('aria-pressed')!=='true')});
