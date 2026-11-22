@@ -429,8 +429,9 @@ function dlClick(e){const t=e.target;
 /* ---- 🧩 build your sentence ---- */
 let BS={};
 function bPool(){const s=MX.secs[cur],P0=[];s.sub.forEach(x=>x.opts.forEach(o=>P0.push(o)));s.tr.forEach(t=>t.forEach(f=>P0.push(f)));s.dl.forEach(l=>P0.push(l));
- return P0.filter(p=>{const n=p[0].split(' ').length;return n>=4&&n<=9})}
-function renderBuild(fresh){P.bld=P.bld||{};let sv=fresh?null:P.bld[cur];
+ return P0.filter(p=>{const n=p[0].split(' ').length;return n>=4&&n<=9&&!badB(p[0])})}
+const badB=t=>/[.?!,]/.test(t.replace(/[.?!]$/,''))&&!/\b(Mr|Mrs|Dr)\.$/.test(t);
+function renderBuild(fresh){P.bld=P.bld||{};let sv=fresh?null:P.bld[cur];if(sv&&sv.q.some(q=>badB(q.en)))sv=null;
  if(!sv){const Q=shuf(bPool()).slice(0,8);sv=P.bld[cur]={q:Q.map(p=>{const words=p[0].replace(/[.?!]$/,'').split(' ');return{en:p[0],ar:p[1],words,mix:shuf(words.map((w,k)=>k))}}),a:{}}}
  BS={q:sv.q,done:{},ok:0};
  $('list').innerHTML=`<div class="score"><span id="bsc">النتيجة: 0 / ${BS.q.length}</span><button id="bredo">جمل جديدة</button></div><p class="lhelp">ركّب جملة جديدة بنفسك من الكلمات، وبعدين اسمعها.</p>`+BS.q.map((q,n)=>`<div class="q" id="bq${n}"><div class="qt">${n+1}. ركّب الجملة</div><div class="qa">${esc(q.ar)}</div><div class="ansz" id="baz${n}"></div><div class="pool" id="bpl${n}">${q.mix.map(k=>`<button class="w" data-bq="${n}" data-bk="${k}">${esc(low(q.words[k],k===0))}</button>`).join('')}</div><div class="qb"><button data-bchk="${n}">تحقق</button><button class="sec2" data-bclr="${n}">مسح</button></div><div class="fb" id="bfb${n}"></div></div>`).join('');
